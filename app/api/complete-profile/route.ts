@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { Role } from '@prisma/client';
+import {Role} from '@prisma/client';
 import { prisma } from '@/lib/prisma';
 import { clerkClient } from '@clerk/nextjs/server';
 
