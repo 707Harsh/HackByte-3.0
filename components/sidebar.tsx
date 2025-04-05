@@ -183,6 +183,44 @@ export const Sidebar = () => {
                 </>
               )}
 
+              {role === "CONTRACTOR" && (
+                <>
+                  <li>
+                    <Link
+                      href="/contractor/farmers_interested"
+                      onClick={closeMobileMenu}
+                      className={`
+                      flex items-center p-3 rounded-lg transition-colors
+                      hover:bg-blue-50 text-gray-700 hover:text-blue-700
+                      ${collapsed ? "justify-center" : ""}
+                      `}
+                    >
+                      <FiShoppingBag size={20} />
+                      {!collapsed && <span className="ml-3">Farmers Interested</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
+              {role === "CONTRACTOR" && (
+                <>
+                  <li>
+                    <Link
+                      href="/contractor/confirmed_contracts"
+                      onClick={closeMobileMenu}
+                      className={`
+                      flex items-center p-3 rounded-lg transition-colors
+                      hover:bg-blue-50 text-gray-700 hover:text-blue-700
+                      ${collapsed ? "justify-center" : ""}
+                      `}
+                    >
+                      <FiShoppingBag size={20} />
+                      {!collapsed && <span className="ml-3">Confirmed Contracts</span>}
+                    </Link>
+                  </li>
+                </>
+              )}
+
               <li>
                 <Link
                   href={`${role==="FARMER" ? "/farmer/profile" : "/contractor/profile"}`}
