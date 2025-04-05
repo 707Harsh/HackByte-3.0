@@ -1,7 +1,15 @@
 "use client";
 
 import { useState } from "react";
-import { FiFileText, FiPlus, FiTruck, FiBox, FiDollarSign, FiFilter, FiStar } from "react-icons/fi";
+import {
+  FiFileText,
+  FiPlus,
+  FiTruck,
+  FiBox,
+  FiDollarSign,
+  FiFilter,
+  FiStar,
+} from "react-icons/fi";
 
 interface SaleListing {
   id: string;
@@ -32,19 +40,9 @@ const Dashboard = () => {
       pricePerUnit: 2100,
       contractorProfile: {
         companyName: "AgriSolutions Pvt. Ltd.",
-        rating: 4.8
+        rating: 4.8,
       },
-      status: "ACTIVE"
-    },{
-      id: "65de0d7361cb4b0c040d0363",
-      cropType: "Wheat",
-      quantity: 150,
-      pricePerUnit: 2100,
-      contractorProfile: {
-        companyName: "AgriSolutions Pvt. Ltd.",
-        rating: 4.8
-      },
-      status: "ACTIVE"
+      status: "ACTIVE",
     },
     {
       id: "65de8c23e9c1bff218cf5275",
@@ -53,9 +51,9 @@ const Dashboard = () => {
       pricePerUnit: 1850,
       contractorProfile: {
         companyName: "FarmConnect International",
-        rating: 4.5
+        rating: 4.5,
       },
-      status: "ACTIVE"
+      status: "ACTIVE",
     },
     {
       id: "65de9938bac72ce0dd2f1960",
@@ -64,9 +62,9 @@ const Dashboard = () => {
       pricePerUnit: 1750,
       contractorProfile: {
         companyName: "CropMasters Co.",
-        rating: 4.2
+        rating: 4.2,
       },
-      status: "ACTIVE"
+      status: "ACTIVE",
     },
   ];
 
@@ -76,13 +74,17 @@ const Dashboard = () => {
   });
 
   const [addedListings, setAddedListings] = useState<SaleListing[]>([]);
-  const [matchedRequests, setMatchedRequests] = useState<PurchaseRequest[]>([]);
+  const [matchedRequests, setMatchedRequests] = useState<PurchaseRequest[]>(
+    dummyPurchaseRequests
+  );
   const [loading, setLoading] = useState(false);
+  const [hasSearched, setHasSearched] = useState(false);
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]: e.target.name === "quantity" ? Number(e.target.value) : e.target.value
+      [e.target.name]:
+        e.target.name === "quantity" ? Number(e.target.value) : e.target.value,
     });
   };
 
@@ -97,47 +99,34 @@ const Dashboard = () => {
         id: `listing-${Date.now()}`,
         cropType: formData.cropType,
         quantity: formData.quantity,
-        status: "ACTIVE"
+        status: "ACTIVE",
       };
 
       // Find matching purchase requests
       const matches = dummyPurchaseRequests.filter(
-        request => 
+        (request) =>
           request.cropType.toLowerCase() === formData.cropType.toLowerCase() &&
           request.quantity <= formData.quantity
       );
 
       setAddedListings([...addedListings, newListing]);
       setMatchedRequests(matches);
+      setHasSearched(true);
       setLoading(false);
     }, 500);
   };
 
+  const handleResetSearch = () => {
+    setMatchedRequests(dummyPurchaseRequests);
+    setHasSearched(false);
+    setFormData({
+      cropType: "",
+      quantity: 0,
+    });
+  };
+
   return (
     <div className="p-4 md:p-8 max-w-7xl mx-auto">
-      {/* Header Cards */}
-      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <FiFileText className="text-2xl text-green-600" />
-            <h2 className="text-xl font-bold text-gray-800">New Contracts</h2>
-          </div>
-          <p className="text-gray-600">
-            Create customized contracts with terms and conditions for your agricultural partners.
-          </p>
-        </div>
-
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center gap-3 mb-4">
-            <FiTruck className="text-2xl text-blue-600" />
-            <h2 className="text-xl font-bold text-gray-800">Active Contracts</h2>
-          </div>
-          <p className="text-gray-600">
-            Manage and monitor your ongoing contracts and partnerships.
-          </p>
-        </div>
-      </div> */}
-
       {/* Add Crop Listing Section */}
       <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
         <div className="flex items-center justify-between mb-6">
@@ -146,11 +135,13 @@ const Dashboard = () => {
             Search Contracts
           </h2>
         </div>
-        
+
         <form onSubmit={handleSubmit} className="max-w-lg">
           <div className="grid gap-4">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Crop Type
+              </label>
               <input
                 type="text"
                 name="cropType"
@@ -161,9 +152,11 @@ const Dashboard = () => {
                 placeholder="Enter crop type (e.g. Wheat, Rice)"
               />
             </div>
-            
+
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (quintals)</label>
+              <label className="block text-sm font-medium text-gray-700 mb-1">
+                Quantity (quintals)
+              </label>
               <input
                 type="number"
                 name="quantity"
@@ -175,34 +168,51 @@ const Dashboard = () => {
                 placeholder="Enter quantity"
               />
             </div>
-            
-            <button
-              type="submit"
-              disabled={loading}
-              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
-            >
-              {loading ? 'Processing...' : 'Search'}
-            </button>
+
+            <div className="flex gap-4">
+              <button
+                type="submit"
+                disabled={loading}
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+              >
+                {loading ? "Processing..." : "Search"}
+              </button>
+              {hasSearched && (
+                <button
+                  type="button"
+                  onClick={handleResetSearch}
+                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-colors"
+                >
+                  Reset
+                </button>
+              )}
+            </div>
           </div>
         </form>
       </div>
 
-      {/* Matched Purchase Requests */}
-      {matchedRequests.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
-          <div className="flex items-center justify-between mb-6">
-            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-              <FiTruck className="text-blue-600" />
-              Matching Contractor Requests
-            </h2>
-            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-              {matchedRequests.length} matches found
-            </span>
-          </div>
+      {/* Available Contracts Section */}
+      <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <FiTruck className="text-blue-600" />
+            {hasSearched
+              ? "Matching Contractor Requests"
+              : "Available Contracts"}
+          </h2>
+          <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+            {matchedRequests.length} {hasSearched ? "matches" : "contracts"}{" "}
+            found
+          </span>
+        </div>
 
+        {matchedRequests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {matchedRequests.map((request) => (
-              <div key={request.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+              <div
+                key={request.id}
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
+              >
                 <div className="flex items-center justify-between mb-3">
                   <h3 className="font-semibold text-gray-800">
                     {request.contractorProfile.companyName}
@@ -212,11 +222,12 @@ const Dashboard = () => {
                       {request.status}
                     </span>
                     <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm flex items-center">
-                      <FiStar className="mr-1" /> {request.contractorProfile.rating}
+                      <FiStar className="mr-1" />{" "}
+                      {request.contractorProfile.rating}
                     </span>
                   </div>
                 </div>
-                
+
                 <div className="space-y-2">
                   <div className="flex items-center gap-2 text-sm">
                     <FiBox className="text-gray-400" />
@@ -231,54 +242,27 @@ const Dashboard = () => {
                     <span>Quantity: {request.quantity} quintals</span>
                   </div>
                 </div>
-                
+
                 <button className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm">
                   Initiate Contract
                 </button>
               </div>
             ))}
           </div>
-        </div>
-      )}
-
-      {/* Existing Listings */}
-      {/* {addedListings.length > 0 && (
-        <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
-          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
-            <FiBox className="text-green-600" />
-            Your Active Listings
-          </h2>
-          
-          <div className="overflow-x-auto">
-            <table className="w-full">
-              <thead className="bg-gray-50">
-                <tr>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Crop Type</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Quantity</th>
-                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Status</th>
-                </tr>
-              </thead>
-              <tbody className="divide-y divide-gray-200">
-                {addedListings.map((listing) => (
-                  <tr key={listing.id} className="hover:bg-gray-50">
-                    <td className="px-6 py-4 font-medium">{listing.cropType}</td>
-                    <td className="px-6 py-4">{listing.quantity} quintals</td>
-                    <td className="px-6 py-4">
-                      <span className={`px-3 py-1 rounded-full text-sm ${
-                        listing.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
-                        listing.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
-                        'bg-gray-100 text-gray-800'
-                      }`}>
-                        {listing.status}
-                      </span>
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+        ) : (
+          <div className="text-center py-8">
+            <p className="text-gray-500">
+              No contracts found matching your search criteria
+            </p>
+            <button
+              onClick={handleResetSearch}
+              className="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+            >
+              Show All Contracts
+            </button>
           </div>
-        </div>
-      )} */}
+        )}
+      </div>
     </div>
   );
 };
