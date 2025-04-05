@@ -1,26 +1,26 @@
-'use client';
+"use client";
 
-import Link from 'next/link';
-import { useUser } from '@clerk/nextjs';
-import { useEffect, useState } from 'react';
-import { 
-  FiHome, 
-  FiUser, 
-  FiSettings, 
-  FiLogOut, 
-  FiFileText, 
+import Link from "next/link";
+import { useUser } from "@clerk/nextjs";
+import { useEffect, useState } from "react";
+import {
+  FiHome,
+  FiUser,
+  FiSettings,
+  FiLogOut,
+  FiFileText,
   FiShoppingBag,
   FiMenu,
-  FiX
-} from 'react-icons/fi';
-import { GiFarmer } from 'react-icons/gi';
-import { FaHardHat } from 'react-icons/fa';
+  FiX,
+} from "react-icons/fi";
+import { GiFarmer } from "react-icons/gi";
+import { FaHardHat } from "react-icons/fa";
 
-type Role = 'FARMER' | 'CONTRACTOR' | 'NONE';
+type Role = "FARMER" | "CONTRACTOR" | "NONE";
 
 export const Sidebar = () => {
   const { user } = useUser();
-  const [role, setRole] = useState<Role>('NONE');
+  const [role, setRole] = useState<Role>("NONE");
   const [mobileOpen, setMobileOpen] = useState(false);
   const [collapsed, setCollapsed] = useState(false);
 
@@ -30,13 +30,13 @@ export const Sidebar = () => {
 
       try {
         const res = await fetch(`/api/get-profile?clerkUserId=${user.id}`);
-        if (!res.ok) throw new Error('Failed to fetch role');
+        if (!res.ok) throw new Error("Failed to fetch role");
         const data = await res.json();
-        if (data.role === 'FARMER' || data.role === 'CONTRACTOR') {
+        if (data.role === "FARMER" || data.role === "CONTRACTOR") {
           setRole(data.role);
         }
       } catch (err) {
-        console.error('Error fetching role:', err);
+        console.error("Error fetching role:", err);
       }
     };
 
@@ -44,11 +44,11 @@ export const Sidebar = () => {
   }, [user]);
 
   const dashboardLink =
-    role === 'FARMER'
-      ? '/farmer/dashboard'
-      : role === 'CONTRACTOR'
-      ? '/contractor/dashboard'
-      : '/dashboard';
+    role === "FARMER"
+      ? "/farmer/dashboard"
+      : role === "CONTRACTOR"
+      ? "/contractor/dashboard"
+      : "/dashboard";
 
   const toggleSidebar = () => {
     setCollapsed(!collapsed);
@@ -70,19 +70,19 @@ export const Sidebar = () => {
 
       {/* Overlay for mobile */}
       {mobileOpen && (
-        <div 
+        <div
           className="fixed inset-0 bg-black bg-opacity-50 z-40 md:hidden"
           onClick={closeMobileMenu}
         ></div>
       )}
 
       {/* Sidebar */}
-      <div 
+      <div
         className={`
           fixed md:relative z-50 h-screen bg-white shadow-lg transition-all duration-300
-          ${mobileOpen ? 'left-0' : '-left-64'} 
+          ${mobileOpen ? "left-0" : "-left-64"} 
           md:left-0
-          ${collapsed ? 'w-20' : 'w-64'}
+          ${collapsed ? "w-20" : "w-64"}
         `}
       >
         {/* Collapse toggle button */}
@@ -133,13 +133,13 @@ export const Sidebar = () => {
           <nav className="flex-1 overflow-y-auto p-4">
             <ul className="space-y-2">
               <li>
-                <Link 
+                <Link
                   href={dashboardLink}
                   onClick={closeMobileMenu}
                   className={`
                     flex items-center p-3 rounded-lg transition-colors
                     hover:bg-green-50 text-gray-700 hover:text-green-700
-                    ${collapsed ? 'justify-center' : ''}
+                    ${collapsed ? "justify-center" : ""}
                   `}
                 >
                   <FiHome size={20} />
@@ -147,15 +147,15 @@ export const Sidebar = () => {
                 </Link>
               </li>
 
-              {role === 'FARMER' && (
+              {role === "FARMER" && (
                 <li>
-                  <Link 
+                  <Link
                     href="/farmer/contracts"
                     onClick={closeMobileMenu}
                     className={`
                       flex items-center p-3 rounded-lg transition-colors
                       hover:bg-green-50 text-gray-700 hover:text-green-700
-                      ${collapsed ? 'justify-center' : ''}
+                      ${collapsed ? "justify-center" : ""}
                     `}
                   >
                     <FiFileText size={20} />
@@ -164,54 +164,56 @@ export const Sidebar = () => {
                 </li>
               )}
 
-              {role === 'CONTRACTOR' && (
-                <li>
-                  <Link 
-                    href="/contractor/market"
-                    onClick={closeMobileMenu}
-                    className={`
+              {role === "CONTRACTOR" && (
+                <>
+                  <li>
+                    <Link
+                      href="/contractor/market"
+                      onClick={closeMobileMenu}
+                      className={`
                       flex items-center p-3 rounded-lg transition-colors
                       hover:bg-blue-50 text-gray-700 hover:text-blue-700
-                      ${collapsed ? 'justify-center' : ''}
-                    `}
-                  >
-                    <FiShoppingBag size={20} />
-                    {!collapsed && <span className="ml-3">Market</span>}
-                  </Link>
-                </li>
+                      ${collapsed ? "justify-center" : ""}
+                      `}
+                    >
+                      <FiShoppingBag size={20} />
+                      {!collapsed && <span className="ml-3">Market</span>}
+                    </Link>
+                  </li>
+                </>
               )}
 
               <li>
-                <Link 
-                  href="/contractor/profile"
+                <Link
+                  href={`${role==="FARMER" ? "/farmer/profile" : "/contractor/profile"}`}
                   onClick={closeMobileMenu}
                   className={`
                     flex items-center p-3 rounded-lg transition-colors
                     hover:bg-gray-100 text-gray-700
-                    ${collapsed ? 'justify-center' : ''}
+                    ${collapsed ? "justify-center" : ""}
                   `}
                 >
                   <FiUser size={20} />
                   {!collapsed && (
                     <span className="ml-3">
-                      {role === 'FARMER' 
-                        ? 'Farmer Profile' 
-                        : role === 'CONTRACTOR' 
-                        ? 'Contractor Profile' 
-                        : 'Profile'}
+                      {role === "FARMER"
+                        ? "Farmer Profile"
+                        : role === "CONTRACTOR"
+                        ? "Contractor Profile"
+                        : "Profile"}
                     </span>
                   )}
                 </Link>
               </li>
 
               <li>
-                <Link 
-                  href="/contractor/settings"
+                <Link
+                  href={`${role==="FARMER" ? "/farmer/settings" : "/contractor/settings"}`}
                   onClick={closeMobileMenu}
                   className={`
                     flex items-center p-3 rounded-lg transition-colors
                     hover:bg-gray-100 text-gray-700
-                    ${collapsed ? 'justify-center' : ''}
+                    ${collapsed ? "justify-center" : ""}
                   `}
                 >
                   <FiSettings size={20} />
@@ -227,7 +229,7 @@ export const Sidebar = () => {
               className={`
                 w-full flex items-center p-3 rounded-lg transition-colors
                 hover:bg-gray-100 text-gray-700
-                ${collapsed ? 'justify-center' : ''}
+                ${collapsed ? "justify-center" : ""}
               `}
             >
               <FiLogOut size={20} />
