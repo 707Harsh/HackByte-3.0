@@ -1,7 +1,7 @@
 "use client";
 
 import { useState, useEffect } from "react";
-import { FiPlus, FiTruck, FiBox, FiDollarSign, FiFilter, FiX, FiCheck } from "react-icons/fi";
+import { FiPlus, FiTruck, FiBox, FiDollarSign, FiFilter, FiX, FiCheck, FiSearch } from "react-icons/fi";
 import { toast } from 'react-hot-toast';
 
 interface PurchaseRequest {
@@ -19,7 +19,7 @@ interface PurchaseRequest {
 const Dashboard = () => {
   const [formData, setFormData] = useState({
     cropType: "",
-    quantity: 0,
+    quantity: "",
   });
 
   const [matchedRequests, setMatchedRequests] = useState<PurchaseRequest[]>([]);
@@ -35,6 +35,7 @@ const Dashboard = () => {
       try {
         setLoading(true);
         const response = await fetch('/api/farmer/purchase-requests');
+        if (!response.ok) throw new Error('Failed to load contracts');
         const data = await response.json();
         setMatchedRequests(data);
       } catch (error) {
@@ -50,8 +51,7 @@ const Dashboard = () => {
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     setFormData({
       ...formData,
-      [e.target.name]:
-        e.target.name === "quantity" ? Number(e.target.value) : e.target.value,
+      [e.target.name]: e.target.value,
     });
   };
 
@@ -60,10 +60,9 @@ const Dashboard = () => {
     setLoading(true);
 
     try {
-      const queryParams = new URLSearchParams({
-        ...(formData.cropType && { cropType: formData.cropType }),
-        ...(formData.quantity > 0 && { maxQuantity: formData.quantity.toString() })
-      });
+      const queryParams = new URLSearchParams();
+      if (formData.cropType) queryParams.append('cropType', formData.cropType);
+      if (formData.quantity) queryParams.append('maxQuantity', formData.quantity);
 
       const response = await fetch(`/api/farmer/purchase-requests?${queryParams}`);
       
@@ -72,6 +71,7 @@ const Dashboard = () => {
       const data = await response.json();
       setMatchedRequests(data);
       setHasSearched(true);
+      toast.success(`Found ${data.length} matching contracts`);
     } catch (error) {
       console.error('Search error:', error);
       toast.error('Failed to search contracts');
@@ -84,10 +84,12 @@ const Dashboard = () => {
     try {
       setLoading(true);
       const response = await fetch('/api/farmer/purchase-requests');
+      if (!response.ok) throw new Error('Failed to reset search');
       const data = await response.json();
       setMatchedRequests(data);
       setHasSearched(false);
-      setFormData({ cropType: "", quantity: 0 });
+      setFormData({ cropType: "", quantity: "" });
+      toast.success('Search reset successfully');
     } catch (error) {
       console.error('Reset error:', error);
       toast.error('Failed to reset search');
@@ -106,28 +108,33 @@ const Dashboard = () => {
     
     setIsConfirming(true);
     try {
-      console.log('Sending contract confirmation for request:', selectedRequest.id);
+      // Get farmerId from your auth system - adjust based on your setup
+      // const farmerId = localStorage.getItem('userId') || ''; 
+      // console.log()
+      // or from session: const farmerId = session?.user?.id;
       
+      // if (!farmerId) {
+      //   throw new Error('Farmer ID not found');
+      // }
+  
       const response = await fetch('/api/farmer/confirm-contract', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ requestId: selectedRequest.id }),
+        body: JSON.stringify({ 
+          requestId: selectedRequest.id, // Make sure this exists
+          // farmerId: farmerId            // Make sure this exists
+        }),
       });
   
-      console.log('API response status:', response.status);
-      
       if (!response.ok) {
         const errorData = await response.json().catch(() => ({}));
-        console.error('API error details:', errorData);
-        throw new Error(`Failed to confirm contract: ${response.status}`);
+        throw new Error(errorData.error || 'Failed to confirm contract');
       }
   
       const updatedRequest = await response.json();
-      console.log('Updated request:', updatedRequest);
       
-      // Update the status in the local state
       setMatchedRequests(prev => prev.map(req => 
         req.id === updatedRequest.id ? updatedRequest : req
       ));
@@ -136,7 +143,7 @@ const Dashboard = () => {
       toast.success('Contract confirmed successfully!');
     } catch (error: any) {
       console.error('Confirmation error:', error);
-      toast.error(`Failed to confirm contract: ${error}`);
+      toast.error(error.message || 'Failed to confirm contract');
     } finally {
       setIsConfirming(false);
     }
@@ -148,9 +155,19 @@ const Dashboard = () => {
       <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
         <div className="flex items-center justify-between mb-6">
           <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-            <FiPlus className="text-green-600" />
+            <FiSearch className="text-green-600" />
             Search Contracts
           </h2>
+          {hasSearched && (
+            <button
+              onClick={handleResetSearch}
+              disabled={loading}
+              className="text-sm text-gray-600 hover:text-gray-800 flex items-center gap-1"
+            >
+              <FiX size={16} />
+              Clear filters
+            </button>
+          )}
         </div>
 
         <form onSubmit={handleSubmit} className="max-w-lg">
@@ -165,13 +182,13 @@ const Dashboard = () => {
                 value={formData.cropType}
                 onChange={handleChange}
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter crop type (e.g. Wheat, Rice)"
+                placeholder="e.g. Wheat, Rice, Corn"
               />
             </div>
 
             <div>
               <label className="block text-sm font-medium text-gray-700 mb-1">
-                Quantity (quintals)
+                Maximum Quantity (quintals)
               </label>
               <input
                 type="number"
@@ -180,7 +197,7 @@ const Dashboard = () => {
                 onChange={handleChange}
                 min="0"
                 className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
-                placeholder="Enter maximum quantity"
+                placeholder="Enter maximum quantity you can supply"
               />
             </div>
 
@@ -188,20 +205,23 @@ const Dashboard = () => {
               <button
                 type="submit"
                 disabled={loading}
-                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+                className="flex-1 bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? "Searching..." : "Search Contracts"}
+                {loading ? (
+                  <>
+                    <svg className="animate-spin h-4 w-4" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24">
+                      <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                      <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                    </svg>
+                    Searching...
+                  </>
+                ) : (
+                  <>
+                    <FiSearch />
+                    Search Contracts
+                  </>
+                )}
               </button>
-              {hasSearched && (
-                <button
-                  type="button"
-                  onClick={handleResetSearch}
-                  disabled={loading}
-                  className="flex-1 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-3 px-6 rounded-lg transition-colors"
-                >
-                  Reset
-                </button>
-              )}
             </div>
           </div>
         </form>
@@ -215,23 +235,23 @@ const Dashboard = () => {
             {hasSearched ? "Matching Contracts" : "Available Contracts"}
           </h2>
           <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
-            {matchedRequests.length} {hasSearched ? "matches" : "contracts"} found
+            {matchedRequests.length} {matchedRequests.length === 1 ? 'contract' : 'contracts'} found
           </span>
         </div>
 
         {loading ? (
-          <div className="text-center py-8">
-            <p className="text-gray-500">Loading contracts...</p>
+          <div className="flex justify-center items-center py-12">
+            <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-green-500"></div>
           </div>
         ) : matchedRequests.length > 0 ? (
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             {matchedRequests.map((request) => (
               <div
                 key={request.id}
-                className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow"
+                className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow flex flex-col"
               >
                 <div className="flex items-center justify-between mb-3">
-                  <h3 className="font-semibold text-gray-800">
+                  <h3 className="font-semibold text-gray-800 truncate">
                     {request.contractorProfile.userName}
                   </h3>
                   <span className={`px-2 py-1 rounded-full text-xs ${
@@ -244,51 +264,60 @@ const Dashboard = () => {
                 </div>
 
                 {request.contractorProfile.companyName && (
-                  <p className="text-sm text-gray-500 mb-3">
+                  <p className="text-sm text-gray-500 mb-3 truncate">
                     {request.contractorProfile.companyName}
                   </p>
                 )}
 
                 <div className="space-y-2 mb-4">
                   <div className="flex items-center gap-2 text-sm">
-                    <FiBox className="text-gray-400" />
-                    <span>Crop: {request.cropType}</span>
+                    <FiBox className="text-gray-400 flex-shrink-0" />
+                    <span className="truncate">Crop: {request.cropType}</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <FiDollarSign className="text-gray-400" />
-                    <span>Price: ₹{request.pricePerUnit}/quintal</span>
+                    <FiDollarSign className="text-gray-400 flex-shrink-0" />
+                    <span>Price: ₹{request.pricePerUnit.toLocaleString()}/quintal</span>
                   </div>
                   <div className="flex items-center gap-2 text-sm">
-                    <FiFilter className="text-gray-400" />
-                    <span>Quantity: {request.quantity} quintals</span>
+                    <FiFilter className="text-gray-400 flex-shrink-0" />
+                    <span>Quantity: {request.quantity.toLocaleString()} quintals</span>
                   </div>
                 </div>
 
-                <button
-                  onClick={() => handleInitiateContract(request)}
-                  disabled={request.status === 'ACTIVE'}
-                  className={`w-full mt-2 text-white font-medium py-2 px-4 rounded-lg text-sm ${
-                    request.status === 'ACTIVE'
-                      ? 'bg-gray-400 cursor-not-allowed'
-                      : 'bg-green-600 hover:bg-green-700'
-                  }`}
-                >
-                  {request.status === 'ACTIVE' ? 'Contract Active' : 'Initiate Contract'}
-                </button>
+                <div className="mt-auto">
+                  <div className="flex justify-between items-center mb-2 text-sm font-medium">
+                    <span>Total Value:</span>
+                    <span>₹{(request.quantity * request.pricePerUnit).toLocaleString()}</span>
+                  </div>
+                  <button
+                    onClick={() => handleInitiateContract(request)}
+                    disabled={request.status === 'ACTIVE'}
+                    className={`w-full text-white font-medium py-2 px-4 rounded-lg text-sm ${
+                      request.status === 'ACTIVE'
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-green-600 hover:bg-green-700'
+                    }`}
+                  >
+                    {request.status === 'ACTIVE' ? 'Contract Active' : 'Initiate Contract'}
+                  </button>
+                </div>
               </div>
             ))}
           </div>
         ) : (
           <div className="text-center py-8">
-            <p className="text-gray-500">
+            <div className="mx-auto w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+              <FiBox className="text-gray-400 text-2xl" />
+            </div>
+            <p className="text-gray-500 mb-4">
               {hasSearched
-                ? "No contracts found matching your search criteria"
-                : "No contracts available in your area"}
+                ? "No contracts match your search criteria"
+                : "No contracts available at this time"}
             </p>
             {hasSearched && (
               <button
                 onClick={handleResetSearch}
-                className="mt-4 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
+                className="mt-2 bg-gray-200 hover:bg-gray-300 text-gray-800 font-medium py-2 px-4 rounded-lg transition-colors"
               >
                 Show All Contracts
               </button>
@@ -330,16 +359,16 @@ const Dashboard = () => {
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Quantity:</span>
-                  <span className="font-medium">{selectedRequest.quantity} quintals</span>
+                  <span className="font-medium">{selectedRequest.quantity.toLocaleString()} quintals</span>
                 </div>
                 <div className="flex justify-between">
                   <span className="text-gray-600">Price:</span>
-                  <span className="font-medium">₹{selectedRequest.pricePerUnit}/quintal</span>
+                  <span className="font-medium">₹{selectedRequest.pricePerUnit.toLocaleString()}/quintal</span>
                 </div>
                 <div className="flex justify-between border-t pt-2">
                   <span className="text-gray-600 font-semibold">Total Value:</span>
                   <span className="font-bold">
-                    ₹{(selectedRequest.quantity * selectedRequest.pricePerUnit).toFixed(2)}
+                    ₹{(selectedRequest.quantity * selectedRequest.pricePerUnit).toLocaleString()}
                   </span>
                 </div>
               </div>

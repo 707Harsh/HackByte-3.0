@@ -72,6 +72,7 @@ model PurchaseRequest {
   cropType          String
   quantity          Float
   pricePerUnit      Float
+  interests         String[]           @default([])
   createdAt         DateTime           @default(now())
   status            ListingStatus      @default(ACTIVE)
 }
