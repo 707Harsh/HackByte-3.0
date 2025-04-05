@@ -2,7 +2,7 @@ const Dashboard = async () => {
 
   return (
     <div className='h-5 w-full px-2'>
-      <div className="flex justify-start grid grid-cols-1 md:grid-cols-2 p-4">
+      <div className=" justify-start grid grid-cols-1 md:grid-cols-2 p-4">
 
       {/* card-1  */}
       <div className="max-w-lg rounded overflow-hidden shadow-lg">
