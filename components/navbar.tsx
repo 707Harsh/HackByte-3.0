@@ -1,7 +1,7 @@
 'use client';
 
 import React, { useEffect, useState } from 'react';
-import { useUser } from '@clerk/nextjs';
+import { useClerk, useUser } from '@clerk/nextjs';
 import { useRouter } from 'next/navigation';
 import { FiHome, FiUser, FiSettings, FiLogOut, FiTruck, FiPackage } from 'react-icons/fi';
 import { GiFarmer } from 'react-icons/gi';
@@ -12,6 +12,7 @@ export const Navbar = () => {
   const [role, setRole] = useState<Role>('NONE');
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const { user } = useUser();
+  const {signOut}=useClerk();
   const router = useRouter();
 
   useEffect(() => {
@@ -34,9 +35,13 @@ export const Navbar = () => {
     fetchRole();
   }, [user]);
 
-  const handleLogout = () => {
-    // Add your logout logic here
-    router.push('/');
+  const handleLogout = async () => {
+    try {
+      await signOut();
+      router.push('/');
+    } catch (err) {
+      console.error('Error during logout:', err);
+    }
   };
 
   const toggleMobileMenu = () => {
@@ -225,7 +230,7 @@ export const Navbar = () => {
                   router.push('/farmer/dashboard');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiHome className="mr-2" /> Dashboard
               </button>
@@ -234,7 +239,7 @@ export const Navbar = () => {
                   router.push('/farmer/profile');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiUser className="mr-2" /> Profile
               </button>
@@ -243,7 +248,7 @@ export const Navbar = () => {
                   router.push('/farmer/contracts');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiPackage className="mr-2" /> My Contracts
               </button>
@@ -252,7 +257,7 @@ export const Navbar = () => {
                   router.push('/farmer/settings');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiSettings className="mr-2" /> Settings
               </button>
@@ -261,7 +266,7 @@ export const Navbar = () => {
                   handleLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiLogOut className="mr-2" /> Logout
               </button>
@@ -275,7 +280,7 @@ export const Navbar = () => {
                   router.push('/contractor/dashboard');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiHome className="mr-2" /> Dashboard
               </button>
@@ -284,7 +289,7 @@ export const Navbar = () => {
                   router.push('/contractor/profile');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiUser className="mr-2" /> Profile
               </button>
@@ -293,7 +298,7 @@ export const Navbar = () => {
                   router.push('/contractor/market');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiTruck className="mr-2" /> Market
               </button>
@@ -302,7 +307,7 @@ export const Navbar = () => {
                   router.push('/contractor/settings');
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiSettings className="mr-2" /> Settings
               </button>
@@ -311,7 +316,7 @@ export const Navbar = () => {
                   handleLogout();
                   setMobileMenuOpen(false);
                 }}
-                className="block w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
+                className="w-full text-left text-gray-700 hover:bg-gray-100 px-3 py-2 rounded-md text-base font-medium flex items-center"
               >
                 <FiLogOut className="mr-2" /> Logout
               </button>

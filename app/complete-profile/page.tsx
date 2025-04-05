@@ -18,38 +18,38 @@ export default function CompleteProfile() {
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
-  const [loadingProfile, setLoadingProfile] = useState(true);
+  // const [loadingProfile, setLoadingProfile] = useState(true);
   const router = useRouter();
   const { user } = useUser();
 
-  useEffect(() => {
-    const checkProfile = async () => {
-      if (!user?.id) return;
+  // useEffect(() => {
+  //   const checkProfile = async () => {
+  //     if (!user?.id) return;
 
-      try {
-        const res = await fetch(`/api/get-profile?clerkUserId=${user.id}`);
-        if (!res.ok) throw new Error('Failed to fetch profile');
-        const profile = await res.json();
+  //     try {
+  //       const res = await fetch(`/api/get-profile?clerkUserId=${user.id}`);
+  //       if (!res.ok) throw new Error('Failed to fetch profile');
+  //       const profile = await res.json();
 
-        const fields = ['name', 'phone', 'state', 'city', 'role'];
-        const isComplete = fields.every((field) => !!profile[field]);
+  //       const fields = ['name', 'phone', 'state', 'city', 'role'];
+  //       const isComplete = fields.every((field) => !!profile[field]);
 
-        if (isComplete) {
-          if (profile.role === 'FARMER') {
-            router.push('/farmer/dashboard');
-          } else if (profile.role === 'CONTRACTOR') {
-            router.push('/contractor/dashboard');
-          }
-        }
-      } catch (err) {
-        console.error('Error checking profile:', err);
-      } finally {
-        setLoadingProfile(false);
-      }
-    };
+  //       if (isComplete) {
+  //         if (profile.role === 'FARMER') {
+  //           router.push('/farmer/dashboard');
+  //         } else if (profile.role === 'CONTRACTOR') {
+  //           router.push('/contractor/dashboard');
+  //         }
+  //       }
+  //     } catch (err) {
+  //       console.error('Error checking profile:', err);
+  //     } finally {
+  //       setLoadingProfile(false);
+  //     }
+  //   };
 
-    checkProfile();
-  }, [user, router]);
+  //   checkProfile();
+  // }, [user, router]);
 
   const onSubmit = async (data: FormData) => {
     setSubmitting(true);
@@ -66,9 +66,9 @@ export default function CompleteProfile() {
       }
 
       if (data.role === 'FARMER') {
-        router.push('/farmer-dashboard');
+        router.push('/farmer/dashboard');
       } else {
-        router.push('/contractor-dashboard');
+        router.push('/contractor/dashboard');
       }
     } catch (err) {
       setError((err as Error).message || 'An error occurred. Please try again.');
@@ -77,13 +77,13 @@ export default function CompleteProfile() {
     }
   };
 
-  if (loadingProfile) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <p>Loading...</p>
-      </div>
-    );
-  }
+  // if (loadingProfile) {
+  //   return (
+  //     <div className="min-h-screen flex items-center justify-center">
+  //       <p>Loading...</p>
+  //     </div>
+  //   );
+  // }
 
   return (
     <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
