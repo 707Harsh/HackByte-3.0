@@ -1,173 +1,284 @@
 "use client";
 
 import { useState } from "react";
+import { FiFileText, FiPlus, FiTruck, FiBox, FiDollarSign, FiFilter, FiStar } from "react-icons/fi";
+
+interface SaleListing {
+  id: string;
+  cropType: string;
+  quantity: number;
+  status: string;
+}
+
+interface PurchaseRequest {
+  id: string;
+  cropType: string;
+  quantity: number;
+  pricePerUnit: number;
+  contractorProfile: {
+    companyName: string;
+    rating: number;
+  };
+  status: string;
+}
 
 const Dashboard = () => {
+  // Dummy data matching Prisma schema
+  const dummyPurchaseRequests: PurchaseRequest[] = [
+    {
+      id: "65de0d7361cb4b0c040d0563",
+      cropType: "Wheat",
+      quantity: 150,
+      pricePerUnit: 2100,
+      contractorProfile: {
+        companyName: "AgriSolutions Pvt. Ltd.",
+        rating: 4.8
+      },
+      status: "ACTIVE"
+    },{
+      id: "65de0d7361cb4b0c040d0363",
+      cropType: "Wheat",
+      quantity: 150,
+      pricePerUnit: 2100,
+      contractorProfile: {
+        companyName: "AgriSolutions Pvt. Ltd.",
+        rating: 4.8
+      },
+      status: "ACTIVE"
+    },
+    {
+      id: "65de8c23e9c1bff218cf5275",
+      cropType: "Rice",
+      quantity: 80,
+      pricePerUnit: 1850,
+      contractorProfile: {
+        companyName: "FarmConnect International",
+        rating: 4.5
+      },
+      status: "ACTIVE"
+    },
+    {
+      id: "65de9938bac72ce0dd2f1960",
+      cropType: "Corn",
+      quantity: 200,
+      pricePerUnit: 1750,
+      contractorProfile: {
+        companyName: "CropMasters Co.",
+        rating: 4.2
+      },
+      status: "ACTIVE"
+    },
+  ];
+
   const [formData, setFormData] = useState({
-    crop: "",
-    quantity: "",
+    cropType: "",
+    quantity: 0,
   });
 
-  const [contractors, setContractors] = useState([
-    { id: 1, crop: "Wheat", price: "$250", minQuantity: "10 tons" },
-    { id: 2, crop: "Corn", price: "$200", minQuantity: "5 tons" },
-    { id: 3, crop: "Soybean", price: "$300", minQuantity: "8 tons" },
-    { id: 4, crop: "Barley", price: "$230", minQuantity: "12 tons" },
-    { id: 5, crop: "Oats", price: "$210", minQuantity: "6 tons" },
-    { id: 6, crop: "Rice", price: "$350", minQuantity: "15 tons" },
-    { id: 7, crop: "Millet", price: "$275", minQuantity: "4 tons" },
-    { id: 8, crop: "Sorghum", price: "$220", minQuantity: "7 tons" },
-  ]);
+  const [addedListings, setAddedListings] = useState<SaleListing[]>([]);
+  const [matchedRequests, setMatchedRequests] = useState<PurchaseRequest[]>([]);
+  const [loading, setLoading] = useState(false);
 
-  const [addedCrops, setAddedCrops] = useState([]);
-  const [showForm, setShowForm] = useState(false);
-  const [showContractors, setShowContractors] = useState(false);
-
-  const handleChange = (e) => {
-    setFormData({ ...formData, [e.target.name]: e.target.value });
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setFormData({
+      ...formData,
+      [e.target.name]: e.target.name === "quantity" ? Number(e.target.value) : e.target.value
+    });
   };
 
-  const handleSubmit = (e) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault();
-    const newCrop = {
-      id: addedCrops.length + 1,
-      crop: formData.crop,
-      quantity: formData.quantity,
-    };
-    setAddedCrops((prev) => [...prev, newCrop]);
-    setFormData({ crop: "", quantity: "" });
-    alert("Crop added successfully!");
-    setShowForm(false); // Hide the form after submission
-  };
+    setLoading(true);
 
-  const toggleContractors = () => {
-    setShowContractors((prev) => !prev);
-  };
+    // Simulate API call delay
+    setTimeout(() => {
+      // Create new sale listing (dummy data)
+      const newListing: SaleListing = {
+        id: `listing-${Date.now()}`,
+        cropType: formData.cropType,
+        quantity: formData.quantity,
+        status: "ACTIVE"
+      };
 
-  const filteredContractors = contractors.filter((contractor) =>
-    addedCrops.some((addedCrop) => addedCrop.crop === contractor.crop)
-  );
+      // Find matching purchase requests
+      const matches = dummyPurchaseRequests.filter(
+        request => 
+          request.cropType.toLowerCase() === formData.cropType.toLowerCase() &&
+          request.quantity <= formData.quantity
+      );
+
+      setAddedListings([...addedListings, newListing]);
+      setMatchedRequests(matches);
+      setLoading(false);
+    }, 500);
+  };
 
   return (
-    <div className="w-full px-2">
-      <div className="grid gap-6 md:grid-cols-2 p-4">
-        {/* Card - 1 */}
-        <div className="max-w-lg rounded overflow-hidden shadow-lg p-6">
-          <div className="font-bold text-xl mb-2">New Contracts</div>
-          <p className="text-gray-700 text-base">
-            Create new contracts for your clients. Customize the contract terms and conditions to suit your needs.
+    <div className="p-4 md:p-8 max-w-7xl mx-auto">
+      {/* Header Cards */}
+      {/* <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <FiFileText className="text-2xl text-green-600" />
+            <h2 className="text-xl font-bold text-gray-800">New Contracts</h2>
+          </div>
+          <p className="text-gray-600">
+            Create customized contracts with terms and conditions for your agricultural partners.
           </p>
         </div>
 
-        {/* Card - 2 */}
-        <div className="max-w-lg rounded overflow-hidden shadow-lg p-6">
-          <div className="font-bold text-xl mb-2">Current Contracts</div>
-          <p className="text-gray-700 text-base">
-            View and manage your current contracts here. You can add, edit, or delete contracts as needed.
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center gap-3 mb-4">
+            <FiTruck className="text-2xl text-blue-600" />
+            <h2 className="text-xl font-bold text-gray-800">Active Contracts</h2>
+          </div>
+          <p className="text-gray-600">
+            Manage and monitor your ongoing contracts and partnerships.
           </p>
         </div>
-      </div>
+      </div> */}
 
-      {/* Crop Adding Form as a Card */}
-      <div className="max-w-lg mx-auto mt-6 p-6 shadow-md rounded">
-        <h2 className="text-xl font-semibold mb-4">Add New Crop</h2>
-        <form onSubmit={handleSubmit}>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Crop</label>
-            <input
-              type="text"
-              name="crop"
-              value={formData.crop}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Enter crop name"
-            />
+      {/* Add Crop Listing Section */}
+      <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
+        <div className="flex items-center justify-between mb-6">
+          <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+            <FiPlus className="text-green-600" />
+            Search Contracts
+          </h2>
+        </div>
+        
+        <form onSubmit={handleSubmit} className="max-w-lg">
+          <div className="grid gap-4">
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Crop Type</label>
+              <input
+                type="text"
+                name="cropType"
+                value={formData.cropType}
+                onChange={handleChange}
+                required
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter crop type (e.g. Wheat, Rice)"
+              />
+            </div>
+            
+            <div>
+              <label className="block text-sm font-medium text-gray-700 mb-1">Quantity (quintals)</label>
+              <input
+                type="number"
+                name="quantity"
+                value={formData.quantity}
+                onChange={handleChange}
+                required
+                min="1"
+                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                placeholder="Enter quantity"
+              />
+            </div>
+            
+            <button
+              type="submit"
+              disabled={loading}
+              className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-3 px-6 rounded-lg transition-colors disabled:opacity-50"
+            >
+              {loading ? 'Processing...' : 'Search'}
+            </button>
           </div>
-          <div className="mb-4">
-            <label className="block text-gray-700 font-bold mb-2">Quantity</label>
-            <input
-              type="number"
-              name="quantity"
-              value={formData.quantity}
-              onChange={handleChange}
-              required
-              className="w-full p-2 border rounded"
-              placeholder="Enter quantity"
-            />
-          </div>
-          <button
-            type="submit"
-            className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600"
-          >
-            Submit
-          </button>
         </form>
       </div>
 
-      {/* List of Added Crops */}
-      <div className="max-w-lg mx-auto mt-6 p-6 shadow-md rounded">
-        <h2 className="text-xl font-semibold mb-4">Added Crops</h2>
-        <table className="min-w-full divide-y divide-gray-200">
-          <thead>
-            <tr>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">ID</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop</th>
-              <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Quantity</th>
-            </tr>
-          </thead>
-          <tbody className="bg-white divide-y divide-gray-200">
-            {addedCrops.map((crop) => (
-              <tr key={crop.id}>
-                <td className="px-6 py-4 whitespace-nowrap">{crop.id}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{crop.crop}</td>
-                <td className="px-6 py-4 whitespace-nowrap">{crop.quantity}</td>
-              </tr>
+      {/* Matched Purchase Requests */}
+      {matchedRequests.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md p-6 border border-gray-100">
+          <div className="flex items-center justify-between mb-6">
+            <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <FiTruck className="text-blue-600" />
+              Matching Contractor Requests
+            </h2>
+            <span className="bg-blue-100 text-blue-800 px-3 py-1 rounded-full text-sm">
+              {matchedRequests.length} matches found
+            </span>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+            {matchedRequests.map((request) => (
+              <div key={request.id} className="bg-gray-50 rounded-lg p-4 border border-gray-200 hover:shadow-md transition-shadow">
+                <div className="flex items-center justify-between mb-3">
+                  <h3 className="font-semibold text-gray-800">
+                    {request.contractorProfile.companyName}
+                  </h3>
+                  <div className="flex items-center gap-1">
+                    <span className="bg-green-100 text-green-800 px-2 py-1 rounded-full text-sm">
+                      {request.status}
+                    </span>
+                    <span className="bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full text-sm flex items-center">
+                      <FiStar className="mr-1" /> {request.contractorProfile.rating}
+                    </span>
+                  </div>
+                </div>
+                
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiBox className="text-gray-400" />
+                    <span>Crop: {request.cropType}</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiDollarSign className="text-gray-400" />
+                    <span>Price: ₹{request.pricePerUnit}/quintal</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-sm">
+                    <FiFilter className="text-gray-400" />
+                    <span>Quantity: {request.quantity} quintals</span>
+                  </div>
+                </div>
+                
+                <button className="w-full mt-4 bg-green-600 hover:bg-green-700 text-white py-2 px-4 rounded-lg text-sm">
+                  Initiate Contract
+                </button>
+              </div>
             ))}
-          </tbody>
-        </table>
-      </div>
-
-      {/* Button to Show/Hide Contractors */}
-      <div className="max-w-lg mx-auto mt-6">
-        <button
-          onClick={toggleContractors}
-          className="bg-green-500 text-white py-2 px-4 rounded hover:bg-green-600"
-        >
-          {showContractors ? "Hide Contractors" : "Show Contractors"}
-        </button>
-      </div>
-
-      {/* Contractors List Filtered by Added Crops */}
-      {showContractors && (
-        <div className="max-w-lg mx-auto mt-6 p-6 shadow-md rounded">
-          <h2 className="text-xl font-semibold mb-4">Contractors Interested in Added Crops</h2>
-          <table className="min-w-full divide-y divide-gray-200">
-            <thead>
-              <tr>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Crop</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Min. Quantity</th>
-              </tr>
-            </thead>
-            <tbody className="bg-white divide-y divide-gray-200">
-              {filteredContractors.length > 0 ? (
-                filteredContractors.map((contractor) => (
-                  <tr key={contractor.id}>
-                    <td className="px-6 py-4 whitespace-nowrap">{contractor.crop}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{contractor.price}</td>
-                    <td className="px-6 py-4 whitespace-nowrap">{contractor.minQuantity}</td>
-                  </tr>
-                ))
-              ) : (
-                <tr>
-                  <td className="px-6 py-4 whitespace-nowrap" colSpan="3">No contractors found for the added crops.</td>
-                </tr>
-              )}
-            </tbody>
-          </table>
+          </div>
         </div>
       )}
+
+      {/* Existing Listings */}
+      {/* {addedListings.length > 0 && (
+        <div className="bg-white rounded-xl shadow-md p-6 mb-8 border border-gray-100">
+          <h2 className="text-xl font-bold text-gray-800 mb-6 flex items-center gap-2">
+            <FiBox className="text-green-600" />
+            Your Active Listings
+          </h2>
+          
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead className="bg-gray-50">
+                <tr>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Crop Type</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Quantity</th>
+                  <th className="px-6 py-3 text-left text-sm font-medium text-gray-500">Status</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-200">
+                {addedListings.map((listing) => (
+                  <tr key={listing.id} className="hover:bg-gray-50">
+                    <td className="px-6 py-4 font-medium">{listing.cropType}</td>
+                    <td className="px-6 py-4">{listing.quantity} quintals</td>
+                    <td className="px-6 py-4">
+                      <span className={`px-3 py-1 rounded-full text-sm ${
+                        listing.status === 'ACTIVE' ? 'bg-green-100 text-green-800' :
+                        listing.status === 'PENDING' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                      }`}>
+                        {listing.status}
+                      </span>
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+        </div>
+      )} */}
     </div>
   );
 };
