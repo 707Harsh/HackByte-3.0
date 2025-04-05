@@ -150,7 +150,7 @@ export const Sidebar = () => {
               {role === 'FARMER' && (
                 <li>
                   <Link 
-                    href="/contracts"
+                    href="/farmer/contracts"
                     onClick={closeMobileMenu}
                     className={`
                       flex items-center p-3 rounded-lg transition-colors
@@ -167,7 +167,7 @@ export const Sidebar = () => {
               {role === 'CONTRACTOR' && (
                 <li>
                   <Link 
-                    href="/market"
+                    href="/contractor/market"
                     onClick={closeMobileMenu}
                     className={`
                       flex items-center p-3 rounded-lg transition-colors
@@ -183,7 +183,7 @@ export const Sidebar = () => {
 
               <li>
                 <Link 
-                  href="/profile"
+                  href="/contractor/profile"
                   onClick={closeMobileMenu}
                   className={`
                     flex items-center p-3 rounded-lg transition-colors
@@ -206,7 +206,7 @@ export const Sidebar = () => {
 
               <li>
                 <Link 
-                  href="/settings"
+                  href="/contractor/settings"
                   onClick={closeMobileMenu}
                   className={`
                     flex items-center p-3 rounded-lg transition-colors
