@@ -1,10 +1,8 @@
-"use client";
 
 import React, { useEffect, useState } from "react";
 import { useUser } from "@clerk/nextjs";
-import { FiEdit, FiMapPin, FiDroplet, FiSun, FiCalendar, FiX } from "react-icons/fi";
+import { FiEdit, FiMapPin, FiDroplet, FiSun } from "react-icons/fi";
 import { GiFarmTractor, GiWheat, GiPlantWatering } from "react-icons/gi";
-import { Dialog } from "@headlessui/react";
 
 interface FarmerData {
   id: string;
@@ -15,13 +13,13 @@ interface FarmerData {
   role: string;
   state: string;
   city: string;
-  createdAt: Date;
-  updatedAt: Date;
+  createdAt: string;  // Changed from Date to string
+  updatedAt: string;  // Changed from Date to string
   farmerProfile?: {
     listings: Array<{
       cropType: string;
       status: string;
-      createdAt: Date;
+      createdAt: string;  // Changed from Date to string
     }>;
     farmSize?: number;
     irrigationType?: string;
@@ -29,34 +27,24 @@ interface FarmerData {
     experience?: number;
   };
   totalContracts?: number;
-  upcomingHarvest?: Date;
+  upcomingHarvest?: string;  // Changed from Date to string
 }
 
 const Profile = () => {
-  const { user } = useUser();
+  const { isLoaded, user } = useUser();
   const [farmerData, setFarmerData] = useState<FarmerData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
-  const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [formData, setFormData] = useState({
-    name: "",
-    city: "",
-    state: "",
-    phone: "",
-    email: "",
-    farmSize: 0,
-    irrigationType: "",
-    soilType: "",
-    experience: 0,
-  });
 
   useEffect(() => {
     const fetchFarmerData = async () => {
       try {
-        const response = await fetch(`/api/farmer?userId=${user?.id}`);
+        if (!user?.id) return;
+        
+        const response = await fetch(`/api/farmers/${user.id}`);
         if (!response.ok) throw new Error('Failed to fetch data');
         
-        const data = await response.json();
+        const data: FarmerData = await response.json();
         setFarmerData(data);
       } catch (err) {
         setError(err instanceof Error ? err.message : 'Failed to load data');
@@ -65,39 +53,11 @@ const Profile = () => {
       }
     };
 
-    if (user?.id) fetchFarmerData();
-  }, [user?.id]);
+    if (isLoaded) fetchFarmerData();
+  }, [isLoaded, user?.id]);
 
-  const handleUpdateProfile = async (e: React.FormEvent) => {
-    e.preventDefault();
-    try {
-      const response = await fetch(`/api/farmers/edit-profile/${user?.id}`, {
-        method: 'PUT',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          ...formData,
-          farmerProfile: {
-            farmSize: Number(formData.farmSize),
-            irrigationType: formData.irrigationType,
-            soilType: formData.soilType,
-            experience: Number(formData.experience),
-          }
-        }),
-      });
-
-      if (!response.ok) throw new Error('Update failed');
-      
-      const data = await response.json();
-      setFarmerData(data);
-      setIsEditModalOpen(false);
-    } catch (err) {
-      setError(err instanceof Error ? err.message : 'Failed to update profile');
-    }
-  };
-
-  if (loading) return <div className="text-center p-8">Loading profile...</div>;
+  // Loading and error states
+  if (!isLoaded || loading) return <div className="text-center p-8">Loading profile...</div>;
   if (error) return <div className="text-red-500 p-8">Error: {error}</div>;
   if (!farmerData) return <div className="p-8">No farmer profile found</div>;
 
@@ -109,37 +69,15 @@ const Profile = () => {
     farmSize: `${farmerData.farmerProfile?.farmSize || 0} acres`,
     experience: `${farmerData.farmerProfile?.experience || 0} years`,
     totalContracts: completedListings.length,
-    upcomingHarvest: activeListings[0]?.createdAt
+    upcomingHarvest: activeListings[0]?.createdAt 
       ? new Date(activeListings[0].createdAt).toLocaleDateString('en-US', { month: 'long', year: 'numeric' })
-      : 'Not available',
+      : 'Not available'
   };
 
-  const crops = Array.from(
-    new Set(activeListings.map(l => l.cropType))
-  );
+  const crops = Array.from(new Set(activeListings.map(l => l.cropType)));
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
-       <Dialog open={isEditModalOpen} onClose={() => setIsEditModalOpen(false)} className="fixed inset-0 z-50 overflow-y-auto">
-        <div className="flex items-center justify-center min-h-screen">
-          <div className="fixed inset-0 bg-black/30" />
-          
-          <div className="relative bg-white rounded-xl p-6 max-w-md w-full mx-4">
-            <div className="flex justify-between items-center mb-4">
-              <Dialog.Title className="text-xl font-bold text-gray-800">Edit Profile</Dialog.Title>
-              <button onClick={() => setIsEditModalOpen(false)} className="text-gray-500 hover:text-gray-700">
-                <FiX className="w-6 h-6" />
-              </button>
-            </div>
-
-            <form onSubmit={handleUpdateProfile} className="space-y-4">
-              {/* Form fields same as previous example */}
-              {/* ... include all the form fields from the previous modal component ... */}
-            </form>
-          </div>
-        </div>
-      </Dialog>
-
       {/* Profile Header */}
       <div className="flex justify-between items-center mb-6">
         <h1 className="text-2xl md:text-3xl font-bold text-green-800">Farmer Dashboard</h1>
@@ -177,7 +115,7 @@ const Profile = () => {
 
               {/* Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                {Object.entries(stats).map(([key, value]) => (
+                {Object.entries(stats).map(([key, value]: [string, string | number]) => (
                   <div key={key} className="bg-gray-50 p-3 rounded-lg">
                     <p className="text-gray-500 text-sm capitalize">{key}</p>
                     <p className="font-semibold text-lg">{value}</p>
