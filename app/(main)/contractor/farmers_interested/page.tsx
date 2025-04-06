@@ -76,7 +76,7 @@ const FarmerCard: React.FC<FarmerCardProps> = ({
         </div>
       </div>
 
-      <div className="space-y-3 mt-4">
+      {/* <div className="space-y-3 mt-4">
         <div className="flex items-center gap-2 text-sm text-gray-600">
           <FiPackage className="text-gray-400 flex-shrink-0" />
           <span className="truncate"><span className="font-medium">Crop:</span> {farmer.cropType}</span>
@@ -93,7 +93,7 @@ const FarmerCard: React.FC<FarmerCardProps> = ({
           <FiDollarSign className="text-gray-400 flex-shrink-0" />
           <span><span className="font-medium">Price:</span> ₹{farmer.pricePerUnit}/quintal</span>
         </div>
-      </div>
+      </div> */}
 
       {status === "pending" && (
         <div className="flex justify-between gap-3 mt-5">
