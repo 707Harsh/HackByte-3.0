@@ -1,26 +1,48 @@
 "use client";
 
-import React from "react";
-import { FiBriefcase, FiStar, FiDollarSign, FiClock, FiMapPin, FiTruck } from "react-icons/fi";
+import React, { useEffect, useState } from "react";
+import { FiBriefcase, FiStar, FiDollarSign, FiClock, FiMapPin, FiTruck, FiPhone, FiMail } from "react-icons/fi";
 import { GiCommercialAirplane } from "react-icons/gi";
+import { useUser } from "@clerk/nextjs";
+
+interface ContractorData {
+  id: string;
+  clerkId: string;
+  name: string;
+  phone: string;
+  email: string | null;
+  role: string;
+  state: string;
+  city: string;
+  // Add other fields from your DB as needed
+}
 
 const ContractorProfile = () => {
-  // Sample contractor data based on Prisma schema
-  const contractorData = {
-    companyName: "AgriSolutions Pvt. Ltd.",
-    rating: 4.8,
-    experience: 12,
-    location: "Mumbai, Maharashtra",
-    totalPurchases: 245,
-    activeContracts: 8,
-    averageResponseTime: "2.4 hours",
-    memberSince: "2015",
-    recentPurchases: [
-      { crop: "Wheat", quantity: 150, price: "₹2,100/q", date: "2024-03-15" },
-      { crop: "Rice", quantity: 80, price: "₹1,850/q", date: "2024-03-18" },
-      { crop: "Corn", quantity: 200, price: "₹1,750/q", date: "2024-03-20" },
-    ]
-  };
+  const { user } = useUser();
+  const [contractorData, setContractorData] = useState<ContractorData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    const fetchContractorData = async () => {
+      try {
+        const response = await fetch(`/api/contractor/${user?.id}`);
+        if (!response.ok) throw new Error("Failed to fetch");
+        const data = await response.json();
+        setContractorData(data);
+      } catch (err) {
+        setError("Failed to load contractor data");
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    console.log("user?.id in profile page:", user?.id);
+    if (user?.id) fetchContractorData();
+  }, [user?.id]);
+
+  if (loading) return <div className="p-8 text-center">Loading...</div>;
+  if (error) return <div className="p-8 text-center text-red-500">{error}</div>;
 
   return (
     <div className="p-4 md:p-8 max-w-6xl mx-auto">
@@ -43,7 +65,7 @@ const ContractorProfile = () => {
                 <GiCommercialAirplane className="text-5xl text-blue-600" />
               </div>
               <div className="absolute bottom-0 right-0 bg-yellow-400 text-white rounded-full w-10 h-10 flex items-center justify-center font-bold">
-                {contractorData.rating}
+                4.8 {/* Static rating until DB field exists */}
               </div>
             </div>
 
@@ -51,118 +73,34 @@ const ContractorProfile = () => {
             <div className="flex-1">
               <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-4">
                 <div>
-                  <h2 className="text-2xl font-bold text-gray-800">{contractorData.companyName}</h2>
+                  <h2 className="text-2xl font-bold text-gray-800">
+                    {contractorData?.name || "Contractor Name"}
+                  </h2>
                   <div className="flex items-center gap-1 text-gray-600 mt-1">
                     <FiMapPin className="text-blue-600" />
-                    <span>{contractorData.location}</span>
+                    <span>
+                      {contractorData?.city && contractorData?.state
+                        ? `${contractorData.city}, ${contractorData.state}`
+                        : "Location not specified"}
+                    </span>
                   </div>
                 </div>
                 <div className="mt-3 md:mt-0 bg-blue-50 text-blue-800 px-3 py-1 rounded-full text-sm">
-                  Member since {contractorData.memberSince}
+                  Member since 2015 {/* Static until DB field exists */}
                 </div>
               </div>
-
-              {/* Stats */}
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-gray-500 text-sm">Experience</p>
-                  <p className="font-semibold text-lg">{contractorData.experience} years</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-gray-500 text-sm">Total Purchases</p>
-                  <p className="font-semibold text-lg">{contractorData.totalPurchases}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-gray-500 text-sm">Active Contracts</p>
-                  <p className="font-semibold text-lg">{contractorData.activeContracts}</p>
-                </div>
-                <div className="bg-gray-50 p-3 rounded-lg">
-                  <p className="text-gray-500 text-sm">Avg. Response</p>
-                  <p className="font-semibold text-lg">{contractorData.averageResponseTime}</p>
-                </div>
-              </div>
-
-              {/* Rating */}
-              <div className="bg-yellow-50 p-4 rounded-lg flex items-center gap-2">
-                <FiStar className="text-yellow-500 text-xl" />
-                <span className="text-yellow-800 font-medium">
-                  {contractorData.rating}/5 Average Rating (1.2k reviews)
-                </span>
+              {/* Add additional fields from your DB as needed */}
+              <div className="mt-4 space-y-2">
+                <p className="text-gray-600">
+                  <FiPhone className="inline mr-2" />
+                  {contractorData?.phone || "N/A"}
+                </p>
+                <p className="text-gray-600">
+                  <FiMail className="inline mr-2" />
+                  {contractorData?.email || "N/A"}
+                </p>
               </div>
             </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Recent Purchases Section */}
-      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-        {/* Recent Purchases */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
-              <FiTruck className="text-blue-600" />
-              <span>Recent Purchases</span>
-            </h3>
-            <div className="space-y-4">
-              {contractorData.recentPurchases.map((purchase, index) => (
-                <div key={index} className="flex justify-between items-center p-3 hover:bg-gray-50 rounded-lg">
-                  <div>
-                    <p className="font-medium">{purchase.crop}</p>
-                    <p className="text-sm text-gray-500">{purchase.quantity} quintals</p>
-                  </div>
-                  <div className="text-right">
-                    <p className="font-medium">{purchase.price}</p>
-                    <p className="text-sm text-gray-500">{purchase.date}</p>
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        {/* Company Details */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
-          <div className="p-6">
-            <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
-              <FiBriefcase className="text-blue-600" />
-              <span>Company Details</span>
-            </h3>
-            <div className="space-y-4">
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-blue-100 rounded-full flex items-center justify-center">
-                  <FiClock className="text-blue-600" />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">Operation Hours</p>
-                  <p className="font-medium">Mon-Sat: 8 AM - 8 PM</p>
-                </div>
-              </div>
-              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 bg-green-100 rounded-full flex items-center justify-center">
-                  <FiDollarSign className="text-green-600" />
-                </div>
-                <div>
-                  <p className="text-gray-500 text-sm">Payment Methods</p>
-                  <p className="font-medium">UPI, Net Banking, Cheque</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-
-      {/* Active Contracts Section */}
-      <div className="mt-6 bg-white rounded-xl shadow-lg overflow-hidden">
-        <div className="p-6">
-          <h3 className="text-xl font-semibold text-gray-800 flex items-center gap-2 mb-4">
-            <FiTruck className="text-blue-600" />
-            <span>Active Contracts</span>
-          </h3>
-          <div className="bg-gray-50 p-4 rounded-lg text-center">
-            <p className="text-gray-600">No active contracts to display</p>
-            <button className="mt-3 text-blue-600 hover:text-blue-800 font-medium">
-              View All Contracts
-            </button>
           </div>
         </div>
       </div>

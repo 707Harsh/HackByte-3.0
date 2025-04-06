@@ -22,10 +22,11 @@ enum ListingStatus {
 
 model User {
   id                  String             @id @default(auto()) @map("_id") @db.ObjectId
-  clerkId             String             @unique
+  clerkId             String             @unique @map("clerkId")
   name                String
   phone               String             @unique
   email               String?            @unique
+  password            String?
   role                Role
   state               String
   city                String
@@ -36,6 +37,7 @@ model User {
   farmerChatRooms     ChatRoom[]         @relation("farmerRelation")
   contractorChatRooms ChatRoom[]         @relation("contractorRelation")
   sentMessages        Message[]          @relation("messageSender")
+  @@map("users")
 }
 
 model FarmerProfile {
